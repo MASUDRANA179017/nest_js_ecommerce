@@ -1,5 +1,5 @@
 import { RegisterDto } from "./dto/register.dto";
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "../entity/user.entity";
 import * as bcrypt from "bcryptjs";
@@ -9,9 +9,6 @@ import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class AuthService {
-  refresh(refresh_Token: string) {
-    throw new Error("Method not implemented.");
-  }
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -59,27 +56,63 @@ export class AuthService {
     };
   }
 
-
-  async login(email: string, password: string): Promise<{ access_Token: string }> {
-    if (!password) {
-      throw new Error("Password must be provided");
-    }
-    if (!password) {
-      throw new Error("Password must be provided");
-    }
-    if (!email || !password) {
-      throw new Error("Email and password must be provided");
-    }
+  async login(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new UnauthorizedException("Invalid credentials");
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new Error("Invalid credentials");
+      throw new UnauthorizedException("Invalid credentials");
     }
-    const payload = { email: user.email, sub: user.id };
-    const access_Token = this.jwtService.sign(payload);
-    return { access_Token };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      role: user.role,
+    };
+    return {
+      access_Token: this.jwtService.sign(payload),
+      refresh_Token: this.jwtService.sign(payload, {
+        expiresIn: "7d",
+      }),
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        role: user.role,
+      },
+    };
+  }
+
+  async refresh(refreshToken: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { refreshToken } });
+    if (!user) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      role: user.role,
+    };
+    return {
+      access_Token: this.jwtService.sign(payload),
+      refresh_Token: this.jwtService.sign(payload, {
+        expiresIn: "7d",
+      }),
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        role: user.role,
+      },
+    };
   }
 }
