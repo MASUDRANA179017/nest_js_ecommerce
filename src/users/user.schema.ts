@@ -11,9 +11,6 @@ export class User extends Document {
 
   @Prop({ required: true })
   refreshToken?: string;
-
-  @Prop({ default: Date.now })
-  createdAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
