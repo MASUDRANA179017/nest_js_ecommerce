@@ -4,6 +4,8 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./entity/user.entity";
+import { ProductModule } from "./product/product.module";
+import { Product } from "./entity/product.entity";
 
 @Module({
   imports: [
@@ -12,12 +14,13 @@ import { User } from "./entity/user.entity";
       host: "localhost",
       port: 5432,
       username: "postgres",
-      password: "Masud*179017#$",
+      password: "admin123",
       database: "postgres",
-      entities: [User],
+      entities: [User, Product],
       synchronize: true,
     }),
     AuthModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
