@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ProductService } from "./product.service";
 import { JwtAuthGuard } from "src/jwt-auth.guard";
@@ -69,7 +69,7 @@ export class ProductController {
   }
 
 
-  @Post("delete/:id")
+  @Delete("delete/:id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Delete product by ID" })

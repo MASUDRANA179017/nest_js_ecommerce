@@ -62,9 +62,8 @@ export class AuthController {
     description: "User profile retrieved successfully",
     type: RegisterDto,
   })
-  @ApiResponse({ status: 400, description: "Bad Request" })
-  @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 500, description: "Internal Server Error" })
+
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async getProfile() {
     console.log("Profile endpoint hit");
   }

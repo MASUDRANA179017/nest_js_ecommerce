@@ -115,4 +115,12 @@ export class AuthService {
       },
     };
   }
+
+  async getProfile(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return user;
+  }
 }
