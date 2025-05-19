@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ProductService } from "./product.service";
 import { JwtAuthGuard } from "src/jwt-auth.guard";
 import { CreateProductDto } from "./dto/crate-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
 
 
 @ApiTags("product")
@@ -56,7 +57,7 @@ export class ProductController {
 
   }
 
-  @Post("update/:id")
+  @Put("update/:id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update product by ID" })
@@ -64,7 +65,15 @@ export class ProductController {
     status: 200,
     description: "Product updated successfully",
   })
-  async updateProduct(@Param("id") id: string, @Body() updateProductDto: CreateProductDto) {
+  @ApiResponse({
+    status: 404,
+    description: "Product not found",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request",
+  })
+  async updateProduct(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.updateProduct(id, updateProductDto);
   }
 
