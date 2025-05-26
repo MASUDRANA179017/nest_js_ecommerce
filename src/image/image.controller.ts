@@ -52,7 +52,7 @@ export class ImageController {
                 return cb(null, true);
             }
             cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and JPG are allowed.'), false);
-    
+
         },
     })
     )
@@ -60,10 +60,6 @@ export class ImageController {
     async uploadImage(@UploadedFile() file: File) {
         return this.imageService.uploadImage(file);
     }
-    
-   
-
-
 
 }
 
