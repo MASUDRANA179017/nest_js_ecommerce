@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ProductService } from "./product.service";
 import { JwtAuthGuard } from "src/jwt-auth.guard";
@@ -19,8 +19,8 @@ export class ProductController {
     status: 201,
     description: "Product created successfully",
   })
-  async createProduct(@Body() createProductDto: CreateProductDto) {
-    return this.productService.createProduct(createProductDto);
+  async createProduct(@Body() createProductDto: CreateProductDto, @Request() req: any) {
+    return this.productService.createProduct(createProductDto, req.user.id);
   }
 
   @Get("getAll")
@@ -57,6 +57,7 @@ export class ProductController {
 
   }
 
+
   @Put("update/:id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -66,17 +67,21 @@ export class ProductController {
     description: "Product updated successfully",
   })
   @ApiResponse({
+    status: 400,
+    description: "Bad Request",
+  })
+  @ApiResponse({
     status: 404,
     description: "Product not found",
   })
   @ApiResponse({
-    status: 400,
-    description: "Bad Request",
+    status: 500,
+    description: "amar api jamela ache update product service a"
   })
-  async updateProduct(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.updateProduct(id, updateProductDto);
+  async updateProduct(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto, @Request() req: any) {
+    return this.productService.updateProduct(id, updateProductDto, req.user.storeId);
   }
-
+  
 
   @Delete("delete/:id")
   @UseGuards(JwtAuthGuard)

@@ -3,10 +3,11 @@ import { ProductController } from "./product.controller";
 import { ProductService } from "./product.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Product } from "src/entity/product.entity";
+import { User } from "src/entity/user.entity";
+import { Store } from "src/entity/store.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])], // Add your entities here
-
+  imports: [TypeOrmModule.forFeature([Product, User, Store])],
   controllers: [ProductController],
   providers: [ProductService]
 })

@@ -13,7 +13,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     const { email, password, firstName, lastName, username, role } = registerDto;
@@ -116,11 +116,18 @@ export class AuthService {
     };
   }
 
-  async getProfile(userId: number): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException("User not found");
+  async getProfile(userPayload: { sub: number }): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userPayload.sub },
+        select: ["id", "email", "firstName", "lastName", "username", "role"],
+      });
+      if (!user) {
+        throw new UnauthorizedException("User not found");
+      }
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException("Invalid token");
     }
-    return user;
   }
 }
