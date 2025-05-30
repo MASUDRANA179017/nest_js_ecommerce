@@ -43,12 +43,12 @@ export class ProductService {
                 store: store
             }
         );
-        
+
         return this.ProductRepository.save(product);
     }
 
     async getAllProducts(): Promise<Product[]> {
-        return this.ProductRepository.find({relations: ['vendor', 'store']});
+        return this.ProductRepository.find({ relations: ['vendor', 'store'] });
     }
 
     async getProductById(id: string): Promise<Product> {
@@ -88,6 +88,7 @@ export class ProductService {
             product.store = store;
         }
 
+        // object assign with Product repository to save this product data 
         Object.assign(product, updateData);
 
         await this.ProductRepository.save(product);
