@@ -3,10 +3,8 @@ import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refreshToken.dto";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { JwtAuthGuard } from "src/jwt-auth.guard";
-import { User } from "src/users/user.schema";
-import { access } from "fs";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+
 
 @ApiTags("auth")
 @Controller("auth")
@@ -55,18 +53,23 @@ export class AuthController {
   async refresh(@Body() refreshTokenDto: RefreshTokenDto): Promise<any> {
     return this.authService.refresh(refreshTokenDto.refreshToken);
   }
+
+
   @Get("profile")
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: "Get user profile" })
   @ApiResponse({
     status: 200,
     description: "User profile retrieved successfully",
-    type: RegisterDto,
   })
   @ApiResponse({ status: 401, description: "Forbidden" })
-  async getProfile(@Req() req: any) {
-    return this.authService.getProfile(req.user);
+  async getProfile() {
+    return this.authService.getProfile();
   }
+
+
+ 
 }
 
 

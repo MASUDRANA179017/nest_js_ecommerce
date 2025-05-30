@@ -1,5 +1,5 @@
 import { RegisterDto } from "./dto/register.dto";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Req, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "../entity/user.entity";
 import * as bcrypt from "bcryptjs";
@@ -75,15 +75,13 @@ export class AuthService {
     };
     return {
       access_Token: this.jwtService.sign(payload),
-      refresh_Token: this.jwtService.sign(payload, {
-        expiresIn: "7d",
-      }),
+      refresh_Token: user.refreshToken,
       user: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        role: user.role,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      role: user.role,
       },
     };
   }
@@ -116,18 +114,12 @@ export class AuthService {
     };
   }
 
-  async getProfile(userPayload: { sub: number }): Promise<User> {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { id: userPayload.sub },
-        select: ["id", "email", "firstName", "lastName", "username", "role"],
-      });
-      if (!user) {
-        throw new UnauthorizedException("User not found");
-      }
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException("Invalid token");
-    }
+  async getProfile(): Promise<User[]> {
+
+    const user = await this.userRepository.find();
+    return user ? user : [];
+
   }
+
+
 }
