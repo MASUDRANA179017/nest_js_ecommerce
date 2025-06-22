@@ -51,13 +51,37 @@ export class ProductService {
         return this.ProductRepository.find({ relations: ['vendor', 'store'] });
     }
 
-    async getProductById(id: string): Promise<Product> {
+    async getProductById(id: string, userId: number): Promise<Product> {
         const product = await this.ProductRepository.findOne({ where: { id: Number(id) } });
+        const user = await this.UserRepository.findOne({ where: { id: userId } });
         if (!product) {
-            throw new Error(`Product with ID ${id} not found`);
+            throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
         }
-        return product;
+        if (!user) {
+            throw new Error(`User with ID ${userId} not found`);
+        }
+        // Ensure vendor and store relations are loaded
+        const productWithRelations = await this.ProductRepository.findOne({
+            where: { id: product.id },
+            relations: ['vendor', 'store'],
+        });
+
+        if (!productWithRelations) {
+            throw new Error(`You are not authorized to access this product or it does not exist`);
+        }
+
+        // Optionally, check if store and vendor are defined
+        if (!productWithRelations.vendor) {
+            throw new Error(`Vendor for product with ID ${id} is undefined`);
+        }
+        if (!productWithRelations.store) {
+            throw new Error(`Store for product with ID ${id} is undefined`);
+        }
+
+
+        return productWithRelations;
     }
+
 
     async updateProduct(id: string, updateProductDto: UpdateProductDto, userId: number): Promise<Product> {
 
@@ -92,7 +116,7 @@ export class ProductService {
         Object.assign(product, updateData);
 
         await this.ProductRepository.save(product);
-        return this.getProductById(id);
+        return this.getProductById(id , userId);
     }
 
     async deleteProduct(id: string): Promise<void> {

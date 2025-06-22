@@ -52,8 +52,8 @@ export class ProductController {
     status: 404,
     description: "Product not found",
   })
-  async getProductById(@Param("id") id: string) {
-    return this.productService.getProductById(id);
+  async getProductById(@Param("id") id: string, @Request() req: any) {
+    return this.productService.getProductById(id, req.user.id);
 
   }
 
