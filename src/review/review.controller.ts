@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from 'src/jwt-auth.guard';
@@ -7,9 +7,9 @@ import { CreateReviewDto } from './dto/crate-review.dto';
 @ApiTags('review')
 @Controller('review')
 export class ReviewController {
-    constructor(private readonly reviewService: ReviewService) {}
+    constructor(private readonly reviewService: ReviewService) { }
 
-    @Post('/create')
+    @Post('create/:productId')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new review' })
@@ -29,12 +29,30 @@ export class ReviewController {
         status: 400,
         description: 'Bad Request',
     })
-
     async createReview(@Body() createReviewDto: CreateReviewDto, @Request() req: any) {
         return this.reviewService.createReview(createReviewDto, req.user.id);
     }
 
-    @Post('/update/:id')
+
+    @Get('get-by-product/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get reviews by product ID' })
+    @ApiResponse({
+        status: 200,
+        description: 'Reviews retrieved successfully',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Product not found',
+    })
+    async getReviewsByProductId(@Param('id') id: string) {
+        const productId = parseInt(id);
+        return this.reviewService.getReviewsByProductId(productId);
+    }
+
+
+    @Put('update/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update an existing review' })
@@ -55,27 +73,11 @@ export class ReviewController {
         description: 'Bad Request',
     })
     async updateReview(@Body() updateReviewDto: CreateReviewDto, @Request() req: any) {
-        const reviewId = parseInt(req.params.id, 10);
+        const reviewId = parseInt(req.params.id);
         return this.reviewService.updateReview(reviewId, updateReviewDto, req.user.id);
     }
 
-    @Post('/get-by-product/:productId')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get reviews by product ID' })
-    @ApiResponse({
-        status: 200,
-        description: 'Reviews retrieved successfully',
-    })
-    @ApiResponse({
-        status: 404,
-        description: 'Product not found',
-    })
-    async getReviewsByProductId(@Request() req: any) {
-        const productId = parseInt(req.params.productId, 10);
-        return this.reviewService.getReviewsByProductId(productId);
-    }
-    @Post('/delete/:id')
+    @Delete('delete/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a review' })
@@ -92,9 +94,9 @@ export class ReviewController {
         description: 'Review not found',
     })
     async deleteReview(@Request() req: any) {
-        const reviewId = parseInt(req.params.id, 10);
+        const reviewId = parseInt(req.params.id);
         return this.reviewService.deleteReview(reviewId, req.user.id);
     }
-    
+
 
 }

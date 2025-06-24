@@ -1,59 +1,69 @@
 import { User } from './../users/user.schema';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from 'src/entity/product.entity';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/crate-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Store } from 'src/entity/store.entity';
+import { Category } from 'src/entity/category.entity';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class ProductService {
     constructor(
         @InjectRepository(Product)
-        private ProductRepository: Repository<Product>,
+        private productRepository: Repository<Product>,
         @InjectRepository(User)
-        private UserRepository: Repository<User>,
+        private userRepository: Repository<User>,
         @InjectRepository(Store)
-        private StoreRepository: Repository<Store>,
+        private storeRepository: Repository<Store>,
+        @InjectRepository(Category)
+        private categoryRepository: Repository<Category>,
     ) { }
 
     async createProduct(createProductDto: CreateProductDto, userId: number): Promise<Product> {
-        const { storeId, name, ...productData } = createProductDto;
-        const user = await this.UserRepository.findOne({ where: { id: userId } });
+        const { storeId, name, categoryId, ...productData } = createProductDto;
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
         }
-        const store = await this.StoreRepository.findOne({ where: { id: storeId, owner: { id: userId } }, relations: ['owner'] });
+        const store = await this.storeRepository.findOne({ where: { id: storeId, owner: { id: userId } }, relations: ['owner'] });
         if (!store) {
             throw new Error(`Store with ID ${storeId} not found or you do not have permission to access it`);
         }
 
+        
         // Check for duplicate product name
-        const existingProduct = await this.ProductRepository.findOne({ where: { name } });
+        const existingProduct = await this.productRepository.findOne({ where: { name } });
         if (existingProduct) {
             throw new Error(`Product with name "${name}" already exists.`);
         }
 
-        const product = this.ProductRepository.create(
+        const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+        if (!category) {
+            throw new NotFoundException(`Category with ID ${categoryId} not found`);
+        }
+
+        const product = this.productRepository.create(
             {
-                name,
                 ...productData,
                 vendor: user,
-                store: store
+                store,
+                category,
             }
         );
 
-        return this.ProductRepository.save(product);
+        return this.productRepository.save(product);
     }
 
     async getAllProducts(): Promise<Product[]> {
-        return this.ProductRepository.find({ relations: ['vendor', 'store'] });
+        return this.productRepository.find({ relations: ['vendor', 'store', 'category', 'reviews'] });
     }
 
     async getProductById(id: string, userId: number): Promise<Product> {
-        const product = await this.ProductRepository.findOne({ where: { id: Number(id) } });
-        const user = await this.UserRepository.findOne({ where: { id: userId } });
+        const product = await this.productRepository.findOne({ where: { id: Number(id) }, relations: ['vendor', 'store', 'category', 'reviews'] });
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!product) {
             throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
         }
@@ -61,7 +71,7 @@ export class ProductService {
             throw new Error(`User with ID ${userId} not found`);
         }
         // Ensure vendor and store relations are loaded
-        const productWithRelations = await this.ProductRepository.findOne({
+        const productWithRelations = await this.productRepository.findOne({
             where: { id: product.id },
             relations: ['vendor', 'store'],
         });
@@ -85,46 +95,45 @@ export class ProductService {
 
     async updateProduct(id: string, updateProductDto: UpdateProductDto, userId: number): Promise<Product> {
 
-        const { storeId, ...updateData } = updateProductDto;
-
-        // console.log('updateProduct called with:', { id, updateProductDto, userId });
-
-        const user = await this.UserRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            console.error('User not found:', userId);
-            throw new Error("user not found -c");
-        }
-
-        const product = await this.ProductRepository.findOne({ where: { id: Number(id) }, relations: ['store', 'vendor'] });
+        const product = await this.productRepository.findOne({ where: { id: Number(id) }, relations: ['store', 'vendor', 'category', 'reviews'] });
 
         if (!product) {
-            console.error('Product not found:', id);
-            throw new Error(`Product with ID ${id} not found`);
+            throw new NotFoundException(`Product with ID ${id} not found`);
+        }
+        if (product?.vendor.id !== userId) {
+            throw new Error(`You are not authorized to update this product`);
         }
 
-        // Optionally update store if storeId is provided
-        if (storeId) {
-            const store = await this.StoreRepository.findOne({ where: { id: storeId, owner: { id: userId } }, relations: ['owner'] });
+        if(updateProductDto.storeId){
+            const store = await this.storeRepository.findOne({ where: { id: updateProductDto.storeId, owner: { id: userId } }, relations: ['owner'] });
             if (!store) {
-                console.error('Store not found or not owned by user:', storeId);
-                throw new Error(`Store with ID ${storeId} not found or you do not have permission to access it`);
+                throw new ForbiddenException(`Store with ID ${updateProductDto.storeId} not found or you do not have permission to access it`);
             }
             product.store = store;
         }
 
-        // object assign with Product repository to save this product data 
-        Object.assign(product, updateData);
+        if (updateProductDto.categoryId) {
+            const category = await this.categoryRepository.findOne({ where: { id: updateProductDto.categoryId } });
+            if (!category) {
+                throw new NotFoundException(`Category with ID ${updateProductDto.categoryId} not found`);
+            }
+            product.category = category;
+        }
 
-        await this.ProductRepository.save(product);
-        return this.getProductById(id , userId);
+        Object.assign(product, updateProductDto);
+        const updatedProduct = await this.productRepository.save(product);
+        return updatedProduct;
     }
 
-    async deleteProduct(id: string): Promise<void> {
-        const product = await this.ProductRepository.findOne({ where: { id: Number(id) } });
-        if (!product) {
-            throw new Error(`Product with ID ${id} not found`);
+    async deleteProduct(id: string, userId: number): Promise<void> {
+        const product = await this.productRepository.findOne({ where: { id: Number(id) } });
+        if (product?.vendor.id !== userId) {
+            throw new Error(`You are not authorized to update this product`);
         }
-        await this.ProductRepository.delete(id);
+        if (!product) {
+            throw new NotFoundException(`Product with ID ${id} not found`);
+        }
+        await this.productRepository.delete(id);
     }
 
 

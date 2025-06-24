@@ -11,6 +11,7 @@ import { StoreModule } from './store/store.module';
 import { Store } from "./entity/store.entity";
 import { ReviewModule } from './review/review.module';
 import { Review } from "./entity/review.entity";
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { Review } from "./entity/review.entity";
     ImageModule,
     StoreModule,
     ReviewModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

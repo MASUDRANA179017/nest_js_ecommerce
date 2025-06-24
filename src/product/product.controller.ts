@@ -91,8 +91,8 @@ export class ProductController {
     status: 200,
     description: "Product deleted successfully",
   })
-  async deleteProduct(@Param("id") id: string) {
-    return this.productService.deleteProduct(id);
+  async deleteProduct(@Param("id") id: string, @Request() req: any) {
+    return this.productService.deleteProduct(id, req.user.id);
   }
 
 }
