@@ -12,6 +12,7 @@ import { Store } from "./entity/store.entity";
 import { ReviewModule } from './review/review.module';
 import { Review } from "./entity/review.entity";
 import { CategoryModule } from './category/category.module';
+import { Category } from "./entity/category.entity";
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { CategoryModule } from './category/category.module';
       username: "postgres",
       password: "admin123",
       database: "postgres",
-      entities: [User, Product,Store, Review],
+      entities: [User, Product,Store, Review, Category],
       synchronize: true,
     }),
     AuthModule,

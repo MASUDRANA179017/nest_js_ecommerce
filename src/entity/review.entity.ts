@@ -1,10 +1,10 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Product } from "./product.entity";
 
 @Entity()
 export class Review {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
     @Column()
     rating: number;

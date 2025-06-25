@@ -35,26 +35,22 @@ export class StoreService {
     }
 
 
-    async getAll(): Promise<Store[]> {
+    async getAll(): Promise<(Store & { averageRating: number })[]> {
         const stores = await this.storeRepository.find({
-            relations: ['owner', 'products', 'products.reviews'],
+            relations: ['owner'],
         });
         return Promise.all(
             stores.map(async (store) => {
-                const averageRating = await this.calculateStoreReview(store.id);
-                return {
-                    ...store,
-                    averageRating,
-                };
+                const averageRating = await this.calculateStoreReview(Number(store.id));
+                return { ...store, averageRating };
             })
         );
-
     }
 
     async getStoreById(id: Number): Promise<Store> {
         const store = await this.storeRepository.findOne({
             where: { id: Number(id) },
-            relations: ['owner', 'products', 'products.reviews']
+            relations: ['owner']
         });
 
         if (!store) {
@@ -79,7 +75,7 @@ export class StoreService {
     }
 
     async deleteStore(id: number, userId: number): Promise<void> {
-        const store = await this.storeRepository.findOne({ where:{ id}, relations: ['owner'] });
+        const store = await this.storeRepository.findOne({ where: { id }, relations: ['owner'] });
 
         if (!store) {
             throw new Error('Store not found');
@@ -88,7 +84,7 @@ export class StoreService {
             throw new Error('You are not authorized to delete this store');
         }
 
-        await this.storeRepository.remove(store);
+        await this.storeRepository.delete(id);
     }
    
     

@@ -3,13 +3,14 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from 'src/jwt-auth.guard';
 import { CreateReviewDto } from './dto/crate-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 
 @ApiTags('review')
 @Controller('review')
 export class ReviewController {
     constructor(private readonly reviewService: ReviewService) { }
 
-    @Post('create/:productId')
+    @Post('create')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new review' })
@@ -72,8 +73,8 @@ export class ReviewController {
         status: 400,
         description: 'Bad Request',
     })
-    async updateReview(@Body() updateReviewDto: CreateReviewDto, @Request() req: any) {
-        const reviewId = parseInt(req.params.id);
+    async updateReview(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto, @Request() req: any) {
+        const reviewId = parseInt(id);
         return this.reviewService.updateReview(reviewId, updateReviewDto, req.user.id);
     }
 
@@ -93,8 +94,8 @@ export class ReviewController {
         status: 404,
         description: 'Review not found',
     })
-    async deleteReview(@Request() req: any) {
-        const reviewId = parseInt(req.params.id);
+    async deleteReview(@Param('id') id: string, @Request() req: any) {
+        const reviewId = parseInt(id);
         return this.reviewService.deleteReview(reviewId, req.user.id);
     }
 

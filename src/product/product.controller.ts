@@ -19,6 +19,18 @@ export class ProductController {
     status: 201,
     description: "Product created successfully",
   })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Store or Category not found",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request",
+  })
   async createProduct(@Body() createProductDto: CreateProductDto, @Request() req: any) {
     return this.productService.createProduct(createProductDto, req.user.id);
   }
@@ -79,9 +91,10 @@ export class ProductController {
     description: "amar api jamela ache update product service a"
   })
   async updateProduct(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto, @Request() req: any) {
-    return this.productService.updateProduct(id, updateProductDto, req.user.storeId);
+
+    return this.productService.updateProduct(id, updateProductDto, req.user.id);
   }
-  
+
 
   @Delete("delete/:id")
   @UseGuards(JwtAuthGuard)

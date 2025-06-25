@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StoreService } from './store.service';
 import { JwtAuthGuard } from 'src/jwt-auth.guard';
@@ -40,7 +40,7 @@ export class StoreController {
         status: 401,
         description: 'Unauthorized',
     })
-    async getAllStores(@Request() req: any) {
+    async getAllStores() {
         return this.storeService.getAll();
     }
 
@@ -78,6 +78,20 @@ export class StoreController {
         return this.storeService.updateStore(+id, updateStoreDto, req.user.id);
     }
 
-
+    @Delete('deleteStore/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete store by ID' })
+    @ApiResponse({
+        status: 204,
+        description: 'Store deleted successfully',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Store not found',
+    })
+    async deleteStore(@Param('id') id: string, @Request() req: any) {
+        return this.storeService.deleteStore(+id, req.user.id);
+    }
 
 }

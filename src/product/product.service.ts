@@ -23,7 +23,7 @@ export class ProductService {
     ) { }
 
     async createProduct(createProductDto: CreateProductDto, userId: number): Promise<Product> {
-        const { storeId, name, categoryId, ...productData } = createProductDto;
+        const { storeId, categoryId, ...productData } = createProductDto;
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
@@ -35,9 +35,9 @@ export class ProductService {
 
         
         // Check for duplicate product name
-        const existingProduct = await this.productRepository.findOne({ where: { name } });
+        const existingProduct = await this.productRepository.findOne({ where: { name: productData.name } });
         if (existingProduct) {
-            throw new Error(`Product with name "${name}" already exists.`);
+            throw new Error(`Product with name "${productData.name}" already exists.`);
         }
 
         const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
@@ -73,12 +73,12 @@ export class ProductService {
         // Ensure vendor and store relations are loaded
         const productWithRelations = await this.productRepository.findOne({
             where: { id: product.id },
-            relations: ['vendor', 'store'],
+            relations: ['vendor', 'store', 'category', 'reviews'],
         });
 
-        if (!productWithRelations) {
-            throw new Error(`You are not authorized to access this product or it does not exist`);
-        }
+       if (!productWithRelations) {
+           throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
+       }
 
         // Optionally, check if store and vendor are defined
         if (!productWithRelations.vendor) {
@@ -94,41 +94,41 @@ export class ProductService {
 
 
     async updateProduct(id: string, updateProductDto: UpdateProductDto, userId: number): Promise<Product> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
 
         const product = await this.productRepository.findOne({ where: { id: Number(id) }, relations: ['store', 'vendor', 'category', 'reviews'] });
 
         if (!product) {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
-        if (product?.vendor.id !== userId) {
-            throw new Error(`You are not authorized to update this product`);
+
+        if (userId !== product.vendor.id) {
+            throw new ForbiddenException(`You are not authorized to update this product`);
         }
 
-        if(updateProductDto.storeId){
-            const store = await this.storeRepository.findOne({ where: { id: updateProductDto.storeId, owner: { id: userId } }, relations: ['owner'] });
-            if (!store) {
-                throw new ForbiddenException(`Store with ID ${updateProductDto.storeId} not found or you do not have permission to access it`);
+        // Check for duplicate product name if name is being updated
+        if (updateProductDto.name && product.name !== updateProductDto.name) {
+            const existingProduct = await this.productRepository.findOne({ where: { name: updateProductDto.name } });
+            if (existingProduct && existingProduct.id !== product.id) {
+                throw new ForbiddenException(`Product with name "${updateProductDto.name}" already exists.`);
             }
-            product.store = store;
         }
 
-        if (updateProductDto.categoryId) {
-            const category = await this.categoryRepository.findOne({ where: { id: updateProductDto.categoryId } });
-            if (!category) {
-                throw new NotFoundException(`Category with ID ${updateProductDto.categoryId} not found`);
-            }
-            product.category = category;
-        }
+       
 
+        // Assign other updatable fields
         Object.assign(product, updateProductDto);
-        const updatedProduct = await this.productRepository.save(product);
-        return updatedProduct;
+
+        return this.productRepository.save(product);
     }
 
     async deleteProduct(id: string, userId: number): Promise<void> {
         const product = await this.productRepository.findOne({ where: { id: Number(id) } });
         if (product?.vendor.id !== userId) {
-            throw new Error(`You are not authorized to update this product`);
+            throw new ForbiddenException(`You are not authorized to delete this product`);
         }
         if (!product) {
             throw new NotFoundException(`Product with ID ${id} not found`);

@@ -36,19 +36,5 @@ export class UpdateProductDto {
     @IsOptional()
     stock?: number
 
-    @ApiProperty({
-        description: "Usr ID of the vendor",
-        example: 1,
-    })
-    @IsNotEmpty()
-    @IsNumber()
-    storeId: number;
-
-    @ApiProperty({
-        description: "Category ID of the product",
-        example: 1,
-    })
-    @IsNotEmpty()
-    @IsNumber()
-    categoryId: number;
+    
 }
