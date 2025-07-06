@@ -53,6 +53,7 @@ export class ReviewService {
 
     async updateReview(reviewId: number, updateReviewDto: UpdateReviewDto, userId: number) {
         const review = await this.reviewRepository.findOne({ where: { id: reviewId }, relations: ['user'] });
+
         if (!review) {
             throw new Error('Review not found');
         }
@@ -73,7 +74,5 @@ export class ReviewService {
         }
         return this.reviewRepository.remove(review);
     }
-
-
 
 }
