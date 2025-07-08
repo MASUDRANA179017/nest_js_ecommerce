@@ -14,6 +14,7 @@ import { Review } from "./entity/review.entity";
 import { CategoryModule } from './category/category.module';
 import { Category } from "./entity/category.entity";
 import { CouponModule } from './coupon/coupon.module';
+import { Coupon } from "./entity/coupon.entity";
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { CouponModule } from './coupon/coupon.module';
       username: "postgres",
       password: "admin123",
       database: "postgres",
-      entities: [User, Product,Store, Review, Category],
+      entities: [User, Product,Store, Review, Category, Coupon],
       synchronize: true,
     }),
     AuthModule,
