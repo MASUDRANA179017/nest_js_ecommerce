@@ -11,7 +11,7 @@ export class OrderItem {
 
   @Column()
   quantity: number;
-
+  
   @Column()
   totalPrice: number;
 

@@ -27,7 +27,7 @@ export class CheckoutService {
 
         const itemTest = this.itemRepository.find()
 
-        console.log(itemTest);
+        // console.log(itemTest);
 
 
         if (!itemTest) {
@@ -43,7 +43,7 @@ export class CheckoutService {
 
             const product = await this.productRepository.findOne({ where: { id: productId } });
             if (!product) throw new ForbiddenException(`Product with ID ${productId} not found`);
-
+            const productPrice = product.price;
             const totalPrice = product.price * quantity;
             totalAmount += totalPrice;
 

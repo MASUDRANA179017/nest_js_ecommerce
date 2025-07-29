@@ -36,8 +36,8 @@ export class ProductController {
   }
 
   @Get("getAll")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
   @ApiOperation({ summary: "Get all products" })
   @ApiResponse({
     status: 200,
@@ -53,8 +53,8 @@ export class ProductController {
 
 
   @Get("getById/:id")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
   @ApiOperation({ summary: "Get product by ID" })
   @ApiResponse({
     status: 200,
@@ -65,7 +65,7 @@ export class ProductController {
     description: "Product not found",
   })
   async getProductById(@Param("id") id: string, @Request() req: any) {
-    return this.productService.getProductById(id, req.user.id);
+    return this.productService.getProductById(id);
 
   }
 

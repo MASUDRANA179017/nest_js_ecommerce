@@ -61,15 +61,15 @@ export class ProductService {
         return this.productRepository.find({ relations: ['vendor', 'store', 'category', 'reviews'] });
     }
 
-    async getProductById(id: string, userId: number): Promise<Product> {
+    async getProductById(id: string): Promise<Product> {
         const product = await this.productRepository.findOne({ where: { id: Number(id) }, relations: ['vendor', 'store', 'category', 'reviews'] });
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+        // const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!product) {
             throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
         }
-        if (!user) {
-            throw new Error(`User with ID ${userId} not found`);
-        }
+        // if (!user) {
+        //     throw new Error(`User with ID ${userId} not found`);
+        // }
         // Ensure vendor and store relations are loaded
         const productWithRelations = await this.productRepository.findOne({
             where: { id: product.id },
