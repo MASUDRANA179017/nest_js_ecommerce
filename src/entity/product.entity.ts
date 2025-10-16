@@ -3,6 +3,7 @@ import { User } from "./user.entity";
 import { Store } from "./store.entity";
 import { Review } from "./review.entity";
 import { Category } from "./category.entity";
+import { Tag } from "./tag.entity";
 
 @Entity()
 export class Product {
@@ -23,14 +24,17 @@ export class Product {
 
     @ManyToOne(() => User, (user) => user.id)
     vendor: User;
-    
-    @ManyToOne(()=> Store, (store) => store.id)
+
+    @ManyToOne(() => Store, (store) => store.id)
     store: Store;
 
-    @OneToMany(()=> Review, (review) => review.product)
+    @OneToMany(() => Review, (review) => review.product)
     reviews: Review[];
 
     @ManyToOne(() => Category, (category) => category.product)
     category: Category;
-    
+
+    @ManyToOne(() => Tag, (tag) => tag.products, { onDelete: 'SET NULL' })
+    tags: Tag[];
+
 }

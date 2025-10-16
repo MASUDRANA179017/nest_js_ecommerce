@@ -18,6 +18,10 @@ import { Coupon } from "./entity/coupon.entity";
 import { CheckoutModule } from './checkout/checkout.module';
 import { Order } from "./entity/order.entity";
 import { OrderItem } from "./entity/order-item.entity";
+import { TagsModule } from './tags/tags.module';
+import { BlogModule } from './blog/blog.module';
+import { Tag } from "./entity/tag.entity";
+import { Blog } from "./entity/blog.entity";
 
 @Module({
   imports: [
@@ -28,7 +32,7 @@ import { OrderItem } from "./entity/order-item.entity";
       username: "postgres",
       password: "admin123",
       database: "postgres",
-      entities: [User, Product,Store, Review, Category, Coupon, Order, OrderItem],
+      entities: [User, Product,Store, Review, Category, Coupon, Order, OrderItem, Tag, Blog],
       synchronize: true,
     }),
     AuthModule,
@@ -39,6 +43,8 @@ import { OrderItem } from "./entity/order-item.entity";
     CategoryModule,
     CouponModule,
     CheckoutModule,
+    TagsModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
