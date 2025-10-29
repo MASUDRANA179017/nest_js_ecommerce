@@ -1,25 +1,24 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
 
 export class UpdateDto {
 
-  
-  @ApiProperty({ description: "user password", example: "password1234"})
+  @ApiPropertyOptional({ description: "user password", example: "password1234" })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
   password: string;
-  
+
   @ApiProperty({ description: "user firstName", example: "Masud" })
   @IsString()
   @IsNotEmpty()
   firstName: string;
-  
+
   @ApiProperty({ description: "user lastName", example: "Rana" })
   @IsString()
   @IsNotEmpty()
   lastName: string;
-  
+
   @ApiProperty({ description: "user username", example: "masudrana" })
   @IsString()
   @IsNotEmpty()
@@ -27,6 +26,4 @@ export class UpdateDto {
 
   @ApiProperty({ description: "user isActive status", example: true })
   isActive: boolean;
-  
-
 }

@@ -117,7 +117,7 @@ export class AuthService {
 
 
   async getProfile(email: string) {
-    
+
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -128,21 +128,30 @@ export class AuthService {
 
   // edit profile
   async editProfile(updateDto: UpdateDto, userId: number): Promise<Partial<User>> {
-    const { password, firstName, lastName, username } = updateDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { password, firstName, lastName, username, isActive } = updateDto;
 
-    await this.userRepository.update(userId, {
-      password: hashedPassword,
-      firstName,
-      lastName,
-      username,
-    });
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    // Only hash password if provided
+    if (password && password.trim() !== "") {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    // Update other fields
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.username = username;
+    user.isActive = isActive;
+
+    // Save the updated user
+    await this.userRepository.save(user);
+
     return user;
   }
+
 
   //Update status user active or inactive
   async updateStatus(id: number, isActive: boolean) {
@@ -150,7 +159,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    
+
     await this.userRepository.update(id, { isActive });
     const updatedUser = await this.userRepository.findOne({ where: { id } });
     return updatedUser;
