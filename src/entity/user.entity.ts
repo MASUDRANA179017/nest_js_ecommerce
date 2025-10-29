@@ -16,6 +16,8 @@ export class User {
     lastName: string;
     @Column()
     username: string;
+    @Column({ default: false })
+    isActive: boolean;
     @Column()
     role: string;
     @Column({nullable: true})

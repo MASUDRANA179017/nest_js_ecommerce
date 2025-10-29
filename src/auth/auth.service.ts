@@ -1,11 +1,12 @@
 import { RegisterDto } from "./dto/register.dto";
-import { Injectable, Req, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Req, UnauthorizedException, NotFoundException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "../entity/user.entity";
 import * as bcrypt from "bcryptjs";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, UpdateResult } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
+import { UpdateDto } from "./dto/Update.dto";
 
 @Injectable()
 export class AuthService {
@@ -77,11 +78,11 @@ export class AuthService {
       access_Token: this.jwtService.sign(payload),
       refresh_Token: user.refreshToken,
       user: {
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      username: user.username,
-      role: user.role,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        role: user.role,
       },
     };
   }
@@ -114,12 +115,51 @@ export class AuthService {
     };
   }
 
-  async getProfile(): Promise<User[]> {
 
-    const user = await this.userRepository.find();
-    return user ? user : [];
-
+  async getProfile(email: string) {
+    
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
 
+  // edit profile
+  async editProfile(updateDto: UpdateDto, userId: number): Promise<Partial<User>> {
+    const { password, firstName, lastName, username } = updateDto;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.userRepository.update(userId, {
+      password: hashedPassword,
+      firstName,
+      lastName,
+      username,
+    });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  //Update status user active or inactive
+  async updateStatus(id: number, isActive: boolean) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    await this.userRepository.update(id, { isActive });
+    const updatedUser = await this.userRepository.findOne({ where: { id } });
+    return updatedUser;
+  }
+
+
+
+  //all users 
+  async getAllUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
 }
