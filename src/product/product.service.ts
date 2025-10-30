@@ -28,12 +28,16 @@ export class ProductService {
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
         }
-        const store = await this.storeRepository.findOne({ where: { id: storeId, owner: { id: userId } }, relations: ['owner'] });
+        const store = await this.storeRepository.findOne({ where: { id: storeId }, relations: ['owner'] });
         if (!store) {
-            throw new Error(`Store with ID ${storeId} not found or you do not have permission to access it`);
+            throw new NotFoundException(`Store with ID ${storeId} not found`);
         }
 
-        
+        // Allow admin or store owner
+        if (store.owner.role !== 'admin' || store.owner.id !== userId) {
+            throw new ForbiddenException(`You do not have permission to use this store`);
+        }
+
         // Check for duplicate product name
         const existingProduct = await this.productRepository.findOne({ where: { name: productData.name } });
         if (existingProduct) {
@@ -76,9 +80,9 @@ export class ProductService {
             relations: ['vendor', 'store', 'category', 'reviews'],
         });
 
-       if (!productWithRelations) {
-           throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
-       }
+        if (!productWithRelations) {
+            throw new Error(`Product with ID ${id} not found or you do not have permission to access it`);
+        }
 
         // Optionally, check if store and vendor are defined
         if (!productWithRelations.vendor) {
@@ -105,9 +109,9 @@ export class ProductService {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
 
-        if (userId !== product.vendor.id) {
-            throw new ForbiddenException(`You are not authorized to update this product`);
-        }
+        // if (userId !== product.vendor.id ) {
+        //     throw new ForbiddenException(`You are not authorized to update this product`);
+        // }
 
         // Check for duplicate product name if name is being updated
         if (updateProductDto.name && product.name !== updateProductDto.name) {
@@ -117,8 +121,6 @@ export class ProductService {
             }
         }
 
-       
-
         // Assign other updatable fields
         Object.assign(product, updateProductDto);
 
@@ -126,13 +128,24 @@ export class ProductService {
     }
 
     async deleteProduct(id: string, userId: number): Promise<void> {
-        const product = await this.productRepository.findOne({ where: { id: Number(id) } });
-        if (product?.vendor.id !== userId) {
-            throw new ForbiddenException(`You are not authorized to delete this product`);
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
         }
+        const product = await this.productRepository.findOne({
+            where: { id: Number(id) },
+            relations: ["vendor"],
+        });
+
         if (!product) {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
+
+        // Ensure vendor exists before checking ownership
+        if (user.id !== userId || product.vendor.role !== "admin") {
+            throw new ForbiddenException(`You are not authorized to delete this product`);
+        }
+
         await this.productRepository.delete(id);
     }
 

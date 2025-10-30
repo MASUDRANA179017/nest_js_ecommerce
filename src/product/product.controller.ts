@@ -104,6 +104,18 @@ export class ProductController {
     status: 200,
     description: "Product deleted successfully",
   })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Product not found",
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Internal Server Error",
+  })
   async deleteProduct(@Param("id") id: string, @Request() req: any) {
     return this.productService.deleteProduct(id, req.user.id);
   }
