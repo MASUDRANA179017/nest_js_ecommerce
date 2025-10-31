@@ -1,3 +1,4 @@
+import { ImageService } from './../image/image.service';
 import { User } from './../users/user.schema';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +15,7 @@ export class ProductService {
     constructor(
         @InjectRepository(Product)
         private productRepository: Repository<Product>,
+        private readonly imageService: ImageService,
         @InjectRepository(User)
         private userRepository: Repository<User>,
         @InjectRepository(Store)
@@ -140,6 +142,18 @@ export class ProductService {
         if (!product) {
             throw new NotFoundException(`Product with ID ${id} not found`);
         }
+        // Delete thumbnail
+        if (product.productThumbnail) {
+            await this.imageService.deleteImage(product.productThumbnail, 'products');
+        }
+
+        // Delete gallery images
+        if (product.productGallery?.length) {
+            for (const img of product.productGallery) {
+                await this.imageService.deleteImage(img, 'products');
+            }
+        }
+
 
         // Ensure vendor exists before checking ownership
         if (user.id !== userId || product.vendor.role !== "admin") {

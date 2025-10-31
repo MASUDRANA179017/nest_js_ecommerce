@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl } from "class-validator"
 
 export class UpdateProductDto {
     @ApiProperty({
@@ -35,6 +35,28 @@ export class UpdateProductDto {
     @IsNumber()
     @IsOptional()
     stock?: number
+
+    @ApiProperty({
+        description: "Thumbnail image URL",
+        example: "http://localhost:8000/uploads/products/file-1761926804589-16322692.jpg",
+      })
+      @IsString()
+      @IsNotEmpty()
+      productThumbnail: string;
+    
+      @ApiProperty({
+        description: "Array of product gallery image URLs",
+        example: [
+          "http://localhost:8000/uploads/products/gallery1.jpg",
+          "http://localhost:8000/uploads/products/gallery2.jpg",
+        ],
+        isArray: true,
+        type: String,
+      })
+      @IsArray()
+      @ArrayNotEmpty()
+      @IsString({ each: true })
+      productGallery: string[];
 
     
 }

@@ -21,16 +21,23 @@ export class Product {
     @Column()
     stock: number;
 
+    @Column({ nullable: true })
+    productThumbnail: string;
+
+    @Column("simple-array", { nullable: true })
+    productGallery: string[];
+
     @ManyToOne(() => User, (user) => user.id)
     vendor: User;
-    
-    @ManyToOne(()=> Store, (store) => store.id)
+
+    @ManyToOne(() => Store, (store) => store.id)
     store: Store;
 
-    @OneToMany(()=> Review, (review) => review.product)
+    @OneToMany(() => Review, (review) => review.product)
     reviews: Review[];
 
     @ManyToOne(() => Category, (category) => category.product)
     category: Category;
-    
+
+
 }
