@@ -11,14 +11,14 @@ import { Review } from 'src/entity/review.entity';
 @Injectable()
 export class StoreService {
     constructor(
-        @InjectRepository (Store)
+        @InjectRepository(Store)
         private readonly storeRepository: Repository<Store>,
-        @InjectRepository (User)
+        @InjectRepository(User)
         private readonly userRepository: Repository<User>,
-        @InjectRepository (Product)
+        @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
-    ) {}
-   
+    ) { }
+
     async create(createStoreDto: CreateStoreDto, userId: number): Promise<Store> {
         const user = await this.userRepository.findOneBy({ id: userId });
         if (!user) {
@@ -61,7 +61,7 @@ export class StoreService {
     }
 
     async updateStore(id: number, updateStoreDto: UpdateStoreDto, userId: number): Promise<Store> {
-        const store = await this.storeRepository.findOne({ where:{ id}, relations: ['owner'] });
+        const store = await this.storeRepository.findOne({ where: { id }, relations: ['owner'] });
 
         if (!store) {
             throw new Error('Store not found');
@@ -70,9 +70,25 @@ export class StoreService {
             throw new Error('You are not authorized to update this store');
         }
 
-       const updatedStore = Object.assign(store, updateStoreDto);
+        const updatedStore = Object.assign(store, updateStoreDto);
         return this.storeRepository.save(updatedStore);
     }
+
+    async updateOwnerStatus(ownerId: number, isActive: boolean, currentUserRole: string): Promise<User> {
+        const owner = await this.userRepository.findOne({ where: { id: ownerId } });
+        if (!owner) {
+            throw new Error('Owner not found');
+        }
+
+        // Only admin or the owner themselves can update
+        if (currentUserRole !== 'admin') {
+            throw new Error('You are not authorized to update owner status');
+        }
+
+        owner.isActive = isActive;
+        return this.userRepository.save(owner);
+    }
+
 
     async deleteStore(id: number, userId: number): Promise<void> {
         const store = await this.storeRepository.findOne({ where: { id }, relations: ['owner'] });
@@ -86,8 +102,8 @@ export class StoreService {
 
         await this.storeRepository.delete(id);
     }
-   
-    
+
+
     private async calculateStoreReview(storeId: number): Promise<number> {
         const products = await this.productRepository.find({
             where: { store: { id: storeId } },

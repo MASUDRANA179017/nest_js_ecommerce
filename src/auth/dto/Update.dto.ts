@@ -24,6 +24,12 @@ export class UpdateDto {
   @IsNotEmpty()
   username: string;
 
+  @ApiProperty({description: "Profile Image", example:"http://localhost:8000/uploads/file-1761868815552-365027602.jpg"})
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  profileImage?: string; 
+
   @ApiProperty({ description: "user isActive status", example: true })
   isActive: boolean;
 }

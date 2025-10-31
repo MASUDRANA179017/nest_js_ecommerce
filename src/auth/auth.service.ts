@@ -17,7 +17,7 @@ export class AuthService {
   ) { }
 
   async register(registerDto: RegisterDto) {
-    const { email, password, firstName, lastName, username, role } = registerDto;
+    const { email, password, firstName, lastName, username, profileImage, role } = registerDto;
     const existingUser = await this.userRepository.findOne({ where: { email } });
     if (existingUser) {
       throw new Error("User already exists");
@@ -30,6 +30,7 @@ export class AuthService {
       password: hashedPassword,
       firstName: firstName,
       lastName: lastName,
+      profileImage: profileImage, 
       role: role,
       refreshToken: uuidv4(),
     });
@@ -128,7 +129,7 @@ export class AuthService {
 
   // edit profile
   async editProfile(updateDto: UpdateDto, userId: number): Promise<Partial<User>> {
-    const { password, firstName, lastName, username, isActive } = updateDto;
+    const { password, profileImage, firstName, lastName, username, isActive } = updateDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -144,6 +145,7 @@ export class AuthService {
     user.firstName = firstName;
     user.lastName = lastName;
     user.username = username;
+    user.profileImage = profileImage,
     user.isActive = isActive;
 
     // Save the updated user

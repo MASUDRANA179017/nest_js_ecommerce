@@ -25,7 +25,7 @@ export class CreateStoreDto {
         required: false
     })
     @IsString()
-    imageUrl?: string;
+    imageUrl: string;
 
 }
 

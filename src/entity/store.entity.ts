@@ -13,6 +13,9 @@ export class Store {
     @Column()
     description: string;
 
+    @Column({ nullable: true })
+    imageUrl: string;
+
     @ManyToOne(() => User, (user) => user.stores)
     owner: User;
 

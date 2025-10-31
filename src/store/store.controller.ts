@@ -8,7 +8,7 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 @ApiTags('store')
 @Controller('store')
 export class StoreController {
-    constructor( private readonly storeService: StoreService ) {}
+    constructor(private readonly storeService: StoreService) { }
 
 
     @Post('create')
@@ -23,8 +23,8 @@ export class StoreController {
         status: 401,
         description: 'Unauthorized',
     })
-    async createStore(@Body() createStoreDto: CreateStoreDto, @Request() req: any ) { 
-        return this.storeService.create( createStoreDto, req.user.id );
+    async createStore(@Body() createStoreDto: CreateStoreDto, @Request() req: any) {
+        return this.storeService.create(createStoreDto, req.user.id);
     }
 
 
@@ -57,7 +57,7 @@ export class StoreController {
         status: 404,
         description: 'Store not found',
     })
-    async getStoreById(@Param('id') id: string){
+    async getStoreById(@Param('id') id: string) {
         return this.storeService.getStoreById(+id);
     }
 
@@ -76,6 +76,24 @@ export class StoreController {
     })
     async updateStore(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto, @Request() req: any) {
         return this.storeService.updateStore(+id, updateStoreDto, req.user.id);
+    }
+
+
+
+    @Put('owner-status/:ownerId')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({summary: "Status update"})
+    @ApiResponse({
+        status: 200,
+        description: "Status update Successfully"
+    })
+    async toggleOwnerStatus(
+        @Param('ownerId') ownerId: number,
+        @Body() body: { isActive: boolean },
+        @Request() req
+    ) {
+        return this.storeService.updateOwnerStatus(ownerId, body.isActive, req.user.role);
     }
 
     @Delete('deleteStore/:id')

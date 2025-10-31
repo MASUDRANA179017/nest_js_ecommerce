@@ -23,6 +23,9 @@ export class User {
     @Column({nullable: true})
     refreshToken?: string;
 
+    @Column({nullable: true})
+    profileImage?: string;
+
     @OneToMany(() => Store, (store) => store.owner)
     stores: Store[];
 

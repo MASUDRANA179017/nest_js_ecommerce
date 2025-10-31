@@ -28,6 +28,11 @@ export class RegisterDto {
   @IsNotEmpty()
   username: string;
 
+  @ApiProperty({description: "Profile Image", example:"http://localhost:8000/uploads/file-1761868815552-365027602.jpg"})
+  @IsString()
+  @IsNotEmpty()
+  profileImage: string;
+
   @ApiProperty({ description: "user role", example: "user" })
   @IsString()
   @IsNotEmpty()
