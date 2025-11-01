@@ -30,6 +30,9 @@ export class UpdateDto {
   @IsNotEmpty()
   profileImage?: string; 
 
+  @ApiProperty({description: "role", example: "user" })
+  role: 'admin' |'vendor' | 'user';
+  
   @ApiProperty({ description: "user isActive status", example: true })
   isActive: boolean;
 }

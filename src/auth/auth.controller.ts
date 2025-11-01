@@ -71,7 +71,7 @@ export class AuthController {
     if (!req.user || !req.user.id) {
       throw new UnauthorizedException('User not authenticated');
     }
-    return this.authService.editProfile(updateDto, req.user.id);
+    return this.authService.editProfile(updateDto, req.user.id, req.user);
   }
 
   @UseGuards(JwtAuthGuard)

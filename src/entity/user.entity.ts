@@ -18,17 +18,18 @@ export class User {
     username: string;
     @Column({ default: false })
     isActive: boolean;
-    @Column()
-    role: string;
-    @Column({nullable: true})
+    @Column({ type: 'varchar', default: 'user' })
+    role: 'admin' | 'vendor' | 'user';
+
+    @Column({ nullable: true })
     refreshToken?: string;
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     profileImage?: string;
 
     @OneToMany(() => Store, (store) => store.owner)
     stores: Store[];
 
-    @OneToMany(()=> Order, (order)=>order.items)
+    @OneToMany(() => Order, (order) => order.items)
     OrderItem: Order[];
 }

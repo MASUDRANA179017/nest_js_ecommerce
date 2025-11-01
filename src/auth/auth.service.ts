@@ -1,5 +1,5 @@
 import { RegisterDto } from "./dto/register.dto";
-import { Injectable, Req, UnauthorizedException, NotFoundException } from "@nestjs/common";
+import { Injectable, Req, UnauthorizedException, NotFoundException, BadRequestException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "../entity/user.entity";
 import * as bcrypt from "bcryptjs";
@@ -30,8 +30,8 @@ export class AuthService {
       password: hashedPassword,
       firstName: firstName,
       lastName: lastName,
-      profileImage: profileImage, 
-      role: role,
+      profileImage: profileImage,
+      role: role as 'admin' | 'vendor' | 'user',
       refreshToken: uuidv4(),
     });
     await this.userRepository.save(user);
@@ -128,8 +128,8 @@ export class AuthService {
 
 
   // edit profile
-  async editProfile(updateDto: UpdateDto, userId: number): Promise<Partial<User>> {
-    const { password, profileImage, firstName, lastName, username, isActive } = updateDto;
+  async editProfile(updateDto: UpdateDto, userId: number, currentUser: User): Promise<Partial<User>> {
+    const { password, profileImage, firstName, lastName, username, role, isActive } = updateDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -146,7 +146,16 @@ export class AuthService {
     user.lastName = lastName;
     user.username = username;
     user.profileImage = profileImage,
-    user.isActive = isActive;
+      user.isActive = isActive;
+
+    // Only admin can update role
+    if (role && currentUser.role === 'admin') {
+      if (!['admin', 'vendor', 'user'].includes(role)) {
+        throw new BadRequestException('Invalid role');
+      }
+      user.role = role;
+    }
+
 
     // Save the updated user
     await this.userRepository.save(user);
