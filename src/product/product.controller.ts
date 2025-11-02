@@ -47,8 +47,8 @@ export class ProductController {
     status: 403,
     description: "Products not found",
   })
-  async getAllProducts() {
-    return this.productService.getAllProducts();
+  async getAllProducts(@Request() req: any) {
+    return this.productService.getAllProducts(req.user);
   }
 
 

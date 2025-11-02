@@ -1,5 +1,5 @@
 import { ImageService } from './../image/image.service';
-import { User } from './../users/user.schema';
+import { User } from 'src/entity/user.entity';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from 'src/entity/product.entity';
@@ -36,7 +36,7 @@ export class ProductService {
         }
 
         // Allow admin or store owner
-        if (store.owner.role !== 'admin' || store.owner.id !== userId) {
+        if (store.owner.role === 'admin' || store.owner.id !== userId) {
             throw new ForbiddenException(`You do not have permission to use this store`);
         }
 
@@ -63,8 +63,22 @@ export class ProductService {
         return this.productRepository.save(product);
     }
 
-    async getAllProducts(): Promise<Product[]> {
-        return this.productRepository.find({ relations: ['vendor', 'store', 'category', 'reviews'] });
+    async getAllProducts(userId: number): Promise<Product[]> {
+        const user = await this.userRepository.findOneBy({ id: userId })
+        console.log(user);
+        
+        if (user?.role === "admin") {
+            // Admin sees all products
+            return this.productRepository.find({
+                relations: ['vendor', 'store', 'category', 'reviews'],
+            });
+        } else {
+            // Vendor sees only their own products
+            return this.productRepository.find({
+                where: { vendor: { id: userId } },
+                relations: ['vendor', 'store', 'category', 'reviews'],
+            });
+        }
     }
 
     async getProductById(id: string): Promise<Product> {

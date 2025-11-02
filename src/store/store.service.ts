@@ -35,10 +35,24 @@ export class StoreService {
     }
 
 
-    async getAll(): Promise<(Store & { averageRating: number })[]> {
-        const stores = await this.storeRepository.find({
-            relations: ['owner'],
-        });
+    async getAll(userId: number): Promise<(Store & { averageRating: number })[]> {
+        const user = await this.userRepository.findOneBy({ id: userId });
+
+        let stores: Store[];
+
+        if (user?.role === "admin") {
+            // Admin sees all stores
+            stores = await this.storeRepository.find({
+                relations: ['owner'],
+            });
+        } else {
+            // Vendor sees only their own stores
+            stores = await this.storeRepository.find({
+                where: { owner: { id: userId } },
+                relations: ['owner'],
+            });
+        }
+
         return Promise.all(
             stores.map(async (store) => {
                 const averageRating = await this.calculateStoreReview(Number(store.id));
@@ -46,6 +60,7 @@ export class StoreService {
             })
         );
     }
+
 
     async getStoreById(id: Number): Promise<Store> {
         const store = await this.storeRepository.findOne({

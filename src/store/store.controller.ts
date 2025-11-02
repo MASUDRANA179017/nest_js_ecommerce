@@ -40,8 +40,8 @@ export class StoreController {
         status: 401,
         description: 'Unauthorized',
     })
-    async getAllStores() {
-        return this.storeService.getAll();
+    async getAllStores(@Request() req: any) {
+        return this.storeService.getAll(req.user.id);
     }
 
 
