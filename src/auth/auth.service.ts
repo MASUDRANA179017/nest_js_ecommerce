@@ -19,9 +19,9 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { email, password, firstName, lastName, username, profileImage, role } = registerDto;
     const existingUser = await this.userRepository.findOne({ where: { email } });
-    if (existingUser) {
-      throw new Error("User already exists");
-    }
+     if (existingUser) {
+    throw new BadRequestException("User already exists with this email");
+  }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = this.userRepository.create({
@@ -146,7 +146,7 @@ export class AuthService {
     user.lastName = lastName;
     user.username = username;
     user.profileImage = profileImage,
-      user.isActive = isActive;
+    user.isActive = isActive;
 
     // Only admin can update role
     if (role && currentUser.role === 'admin') {

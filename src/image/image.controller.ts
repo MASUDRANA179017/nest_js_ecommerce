@@ -32,8 +32,8 @@ export class ImageController {
   constructor(private readonly imageService: ImageService) {}
 
   @Post('upload')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload an image to a dynamic folder' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadImageDto })
