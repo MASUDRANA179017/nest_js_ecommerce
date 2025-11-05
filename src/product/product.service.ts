@@ -63,22 +63,13 @@ export class ProductService {
         return this.productRepository.save(product);
     }
 
-    async getAllProducts(userId: number): Promise<Product[]> {
-        const user = await this.userRepository.findOneBy({ id: userId })
-        console.log(user);
-        
-        if (user?.role === "admin") {
-            // Admin sees all products
-            return this.productRepository.find({
-                relations: ['vendor', 'store', 'category', 'reviews'],
-            });
-        } else {
-            // Vendor sees only their own products
-            return this.productRepository.find({
-                where: { vendor: { id: userId } },
-                relations: ['vendor', 'store', 'category', 'reviews'],
-            });
-        }
+    async getAllProducts(): Promise<Product[]> {
+
+        // all products
+        return this.productRepository.find({
+            relations: ['vendor', 'store', 'category', 'reviews'],
+        });
+
     }
 
     async getProductById(id: string): Promise<Product> {
@@ -175,6 +166,29 @@ export class ProductService {
         }
 
         await this.productRepository.delete(id);
+    }
+
+
+
+    async vendorProduct(userId: number): Promise<Product[]> {
+        const user = await this.userRepository.findOneBy({ id: userId })
+
+        if (user?.role === "admin") {
+            // Admin sees all products
+            return this.productRepository.find({
+                relations: ['vendor', 'store', 'category', 'reviews'],
+            });
+        }
+        if (user?.role === "vendor") {
+            // Vendor sees only their own products
+            // console.log("this.productRepository");
+
+            return this.productRepository.find({
+                where: { vendor: {id: userId} },
+                relations: ['vendor', 'store', 'category', 'reviews'],
+            });
+        }
+        return [];
     }
 
 

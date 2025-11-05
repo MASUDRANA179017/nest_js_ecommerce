@@ -47,8 +47,24 @@ export class ProductController {
     status: 403,
     description: "Products not found",
   })
-  async getAllProducts(@Request() req: any) {
-    return this.productService.getAllProducts(req.user);
+  async getAllProducts() {
+    return this.productService.getAllProducts();
+  }
+
+  @Get("vendorProduct")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get all products" })
+  @ApiResponse({
+    status: 200,
+    description: "Products retrieved successfully",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Products not found",
+  })
+  async userRoleProducts(@Request() req: any) {
+    return this.productService.vendorProduct(req.user.id);
   }
 
 
